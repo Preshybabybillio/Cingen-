@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CineGen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: a screening room. Controls on the left like a director's slate, a wide 'screen' on the right. */
+:root{
+  --ink:#0d0e10; --panel:#16181c; --line:#2a2d33; --text:#ece8df; --muted:#9a968c;
+  --amber:#e9a23b; --amber-dark:#b9791a; --danger:#e5634d;
+  --display:'Big Shoulders Display','Arial Narrow',sans-serif;
+  --body:'Instrument Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ink);color:var(--text);font:15px/1.5 var(--body);min-height:100vh;
+  padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1200px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:20px;border-bottom:1px solid var(--line);padding-bottom:14px}
+h1{font:800 44px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;margin:0}
+h1 span{color:var(--amber)}
+.tag{color:var(--muted);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+main{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:24px}
+@media(max-width:860px){main{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:16px;min-width:0}
+label,.lbl{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+textarea,select,input[type=password]{width:100%;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:4px;padding:10px 12px;font:inherit}
+textarea{min-height:120px;resize:vertical}
+textarea:focus,select:focus,input:focus,button:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.preset{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+.preset:hover{border-color:var(--amber)}
+.preset[aria-pressed=true]{background:var(--amber);border-color:var(--amber);color:#1a1205;font-weight:600}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.row{grid-template-columns:1fr}}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+button.primary,button.secondary{font:600 15px var(--body);border-radius:4px;padding:12px 18px;cursor:pointer;border:1px solid var(--amber)}
+button.primary{background:var(--amber);color:#1a1205;flex:1 1 160px}
+button.primary:hover:not(:disabled){background:#f2b457}
+button.secondary{background:transparent;color:var(--amber)}
+button.secondary:hover:not(:disabled){background:rgba(233,162,59,.12)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.screen{aspect-ratio:16/9;background:#050506;border:1px solid var(--line);border-radius:6px;display:grid;place-items:center;overflow:hidden;max-width:100%}
+.screen.tall{aspect-ratio:9/16;max-height:70vh;margin:0 auto}
+.screen.square{aspect-ratio:1/1;max-height:70vh;margin:0 auto}
+.screen video{width:100%;height:100%;object-fit:contain;background:#000}
+.idle{text-align:center;color:var(--muted);padding:24px;max-width:340px}
+.idle b{display:block;font:700 26px var(--display);letter-spacing:.06em;color:var(--text);text-transform:uppercase;margin-bottom:6px}
+.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:14px;width:220px;margin-inline:auto}
+.bar i{display:block;height:100%;width:35%;background:var(--amber);animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{0%{margin-left:-35%}100%{margin-left:100%}}
+@media(prefers-reduced-motion:reduce){.bar i{animation:none;width:100%}}
+.error{color:var(--danger);font-size:14px;margin:0}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.meta a,.meta button{font:500 14px var(--body)}
+.link{background:none;border:1px solid var(--line);color:var(--text);border-radius:4px;padding:8px 12px;cursor:pointer;text-decoration:none;display:inline-block}
+.link:hover{border-color:var(--amber);color:var(--amber)}
+h2{font:700 20px var(--display);letter-spacing:.08em;text-transform:uppercase;margin:24px 0 10px}
+.history{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;text-align:left;color:var(--text);font:inherit;cursor:pointer;min-width:0}
+.item:hover{border-color:var(--amber)}
+.item p{margin:0 0 6px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:14px}
+.item small{color:var(--muted)}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+.hint{font-size:12px;color:var(--muted);margin:6px 0 0}
+.hint a{color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Cine<span>Gen</span></h1>
+    <div class="tag">Text to short cinematic video &middot; free Hugging Face models</div>
+  </header>
+
+  <main>
+    <section class="panel" aria-label="Scene settings">
+      <div>
+        <label for="prompt">Scene description</label>
+        <textarea id="prompt" placeholder="A lone traveler walks through a neon-lit rainy street at night, umbrella glowing, steam rising from the grates..."></textarea>
+      </div>
+
+      <div>
+        <span class="lbl" id="presetLbl">Style</span>
+        <div class="presets" id="presets" role="group" aria-labelledby="presetLbl"></div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="duration">Duration</label>
+          <select id="duration">
+            <option value="3">3 seconds</option>
+            <option value="5" selected>5 seconds</option>
+            <option value="8">8 seconds</option>
+            <option value="10">10 seconds</option>
+          </select>
+        </div>
+        <div>
+          <label for="aspect">Aspect ratio</label>
+          <select id="aspect">
+            <option value="16:9" selected>16:9 Landscape</option>
+            <option value="9:16">9:16 Vertical</option>
+            <option value="1:1">1:1 Square</option>
+          </select>
+        </div>
+        <div>
+          <label for="camera">Camera movement</label>
+          <select id="camera">
+            <option value="">Dynamic mix</option>
+            <option>Tracking shot</option>
+            <option>Close-up</option>
+            <option>Wide angle</option>
+            <option>Aerial drone shot</option>
+            <option>Slow push-in</option>
+            <option>Handheld</option>
+          </select>
+        </div>
+        <div>
+          <label for="lighting">Lighting</label>
+          <select id="lighting">
+            <option value="">Realistic, natural</option>
+            <option>Golden hour</option>
+            <option>Moody low-key</option>
+            <option>Neon night</option>
+            <option>Soft studio</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="model">AI model (free)</label>
+        <select id="model"></select>
+      </div>
+
+      <details id="settings">
+        <summary>Settings: Hugging Face token</summary>
+        <div style="margin-top:10px">
+          <label for="token">Hugging Face token</label>
+          <input id="token" type="password" placeholder="hf_..." autocomplete="off">
+          <p class="hint">Free to create at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">huggingface.co/settings/tokens</a> (a "Read" token, plus permission to make calls to Inference Providers). It is saved only on this phone.</p>
+        </div>
+      </details>
+
+      <div class="actions">
+        <button class="primary" id="gen" type="button" disabled>Generate Video</button>
+        <button class="secondary" id="regen" type="button" disabled>Regenerate</button>
+      </div>
+      <p class="error" id="err" role="alert" hidden></p>
+    </section>
+
+    <section aria-label="Preview">
+      <div class="screen" id="screen">
+        <div class="idle" id="idle"><b>Your scene appears here</b>Describe a moment, pick a style, and press Generate Video.</div>
+      </div>
+      <div class="meta" id="meta" hidden>
+        <a class="link" id="dl" download="cinegen-video.mp4">Download</a>
+        <button class="link" id="copy" type="button">Copy prompt</button>
+      </div>
+
+      <h2>Past scenes</h2>
+      <div class="history" id="history"></div>
+      <p class="hint" id="histEmpty">Scenes you generate are listed here. Click one to reload its settings.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+const PRESETS = {
+  "Ultra-realistic": "ultra-realistic, lifelike textures, 8K detail, natural skin and materials",
+  "Photorealistic cinematic": "photorealistic cinematic film look, anamorphic lens, shallow depth of field, rich color grading",
+  "Anime style": "high-quality anime style, expressive characters, painterly backgrounds, fluid hand-drawn animation",
+  "3D animation": "polished 3D animated film, stylized characters, soft global illumination, smooth motion",
+  "Documentary style": "documentary footage, natural handheld feel, authentic environment, candid moments",
+  "Sci-fi futuristic": "futuristic sci-fi world, holographic lights, sleek technology, atmospheric haze",
+  "Vintage film": "vintage 35mm film, warm grain, soft halation, faded colors, light flicker"
+};
+const $ = id => document.getElementById(id);
+let selectedPreset = "Photorealistic cinematic";
+let lastInputs = null;
+let busy = false;
+let history = [];
+try { history = JSON.parse(localStorage.getItem("cinegen-history") || "[]"); } catch(e) {}
+
+function store(k, v){ try { localStorage.setItem(k, v); } catch(e) {} }
+function load(k){ try { return localStorage.getItem(k) || ""; } catch(e) { return ""; } }
+
+// Presets
+const box = $("presets");
+Object.keys(PRESETS).forEach(name => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "preset"; b.textContent = name;
+  b.setAttribute("aria-pressed", name === selectedPreset);
+  b.addEventListener("click", () => { selectedPreset = name; [...box.children].forEach(c => c.setAttribute("aria-pressed", c === b)); });
+  box.appendChild(b);
+});
+
+// Models
+const MODELS = {"Wan-AI/Wan2.1-T2V-14B":"Wan 2.1 (best quality)","Lightricks/LTX-Video":"LTX-Video (faster)"};
+Object.entries(MODELS).forEach(([id,label])=>{const o=document.createElement("option");o.value=id;o.textContent=label;$("model").appendChild(o);});
+
+$("token").value = load("cinegen-token");
+$("token").addEventListener("change", () => store("cinegen-token", $("token").value.trim()));
+$("prompt").addEventListener("input", () => { $("gen").disabled = busy || !$("prompt").value.trim(); });
+
+function readInputs(){
+  return { prompt: $("prompt").value.trim(), preset: selectedPreset, seconds: Number($("duration").value),
+    aspect: $("aspect").value, camera: $("camera").value, lighting: $("lighting").value, model: $("model").value };
+}
+
+// Turn the user's idea into a fuller cinematic direction
+function enhance(i){
+  const cam = i.camera ? i.camera.toLowerCase() : "a dynamic mix of tracking shots, close-ups and wide angles";
+  const light = i.lighting ? i.lighting.toLowerCase() + " lighting" : "realistic lighting with consistent light sources and natural soft shadows";
+  const orient = i.aspect === "9:16" ? "vertical framing" : i.aspect === "1:1" ? "square framing" : "widescreen framing";
+  return `${i.prompt}. Clear subject and setting, a beginning, middle and end of action, strong emotional tone and storytelling composition. Camera: ${cam}. ${light}, depth of field. Style: ${PRESETS[i.preset]}. ${orient}, smooth motion, about ${i.seconds} seconds.`;
+}
+
+function showIdle(html){ const s = $("screen"); s.innerHTML = html; }
+function setBusy(v){ busy = v; $("gen").disabled = v || !$("prompt").value.trim(); $("regen").disabled = v || !lastInputs; $("gen").textContent = v ? "Generating..." : "Generate Video"; }
+function showError(m){ const e = $("err"); e.textContent = m || ""; e.hidden = !m; }
+
+async function run(inputs, newSeed){
+  if (busy) return;
+  showError(""); setBusy(true);
+  const s = $("screen");
+  s.className = "screen" + (inputs.aspect === "9:16" ? " tall" : inputs.aspect === "1:1" ? " square" : "");
+  const msgs = ["Composing scene...", "Setting up lighting...", "Placing the camera...", "Rendering frames..."];
+  let n = 0;
+  showIdle(`<div class="idle"><b id="status">${msgs[0]}</b>This usually takes 1 to 3 minutes on the free tier.<div class="bar"><i></i></div></div>`);
+  const timer = setInterval(() => { n = (n + 1) % msgs.length; const st = $("status"); if (st) st.textContent = msgs[n]; }, 4000);
+  try {
+    const seed = newSeed ? Math.floor(Math.random() * 1e9) : (inputs.seed ?? Math.floor(Math.random() * 1e9));
+    const token = $("token").value.trim();
+    if (!token) { $("settings").open = true; throw new Error("Paste your free Hugging Face token under Settings first."); }
+    const { InferenceClient } = await import("https://esm.sh/@huggingface/inference@4");
+    const client = new InferenceClient(token);
+    const base = { provider: "auto", model: inputs.model, inputs: enhance(inputs) };
+    let blob;
+    try {
+      try {
+        blob = await client.textToVideo({ ...base, parameters: { seed, num_frames: Math.round(inputs.seconds * 16) + 1 } });
+      } catch (e) {
+        if (/parameter|num_frames|seed|invalid/i.test(String(e.message))) blob = await client.textToVideo(base); else throw e;
+      }
+    } catch (e) {
+      const msg = String((e && e.message) || e);
+      if (/401|unauthorized|invalid (user )?token/i.test(msg)) throw new Error("Your Hugging Face token was rejected. Check that it is correct.");
+      if (/402|credit|quota|payment|limit/i.test(msg)) throw new Error("You have used up the free monthly credits. Try next month or switch model.");
+      if (/429|rate/i.test(msg)) throw new Error("Too many requests. Wait a minute and try again.");
+      throw new Error("Video generation failed. " + msg);
+    }
+    const url = URL.createObjectURL(blob);
+    s.innerHTML = "";
+    const v = document.createElement("video"); v.src = url; v.controls = true; v.autoplay = true; v.loop = true; v.playsInline = true;
+    s.appendChild(v);
+    $("dl").href = url; $("meta").hidden = false;
+    lastInputs = { ...inputs, seed };
+    addHistory(lastInputs);
+  } catch (e) {
+    showIdle(`<div class="idle"><b>No video this time</b>${"Try again, or switch model."}</div>`);
+    showError(e.message || "Generation failed.");
+  } finally { clearInterval(timer); setBusy(false); }
+}
+
+function addHistory(i){
+  history.unshift({ prompt: i.prompt, preset: i.preset, seconds: i.seconds, aspect: i.aspect, camera: i.camera, lighting: i.lighting, model: i.model, seed: i.seed });
+  history = history.slice(0, 20); store("cinegen-history", JSON.stringify(history)); renderHistory();
+}
+function renderHistory(){
+  const h = $("history"); h.innerHTML = ""; $("histEmpty").hidden = history.length > 0;
+  history.forEach(i => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "item";
+    const p = document.createElement("p"); p.textContent = i.prompt;
+    const sm = document.createElement("small"); sm.textContent = `${i.preset} · ${i.seconds}s · ${i.aspect}`;
+    b.append(p, sm);
+    b.addEventListener("click", () => {
+      $("prompt").value = i.prompt; $("duration").value = i.seconds; $("aspect").value = i.aspect; $("camera").value = i.camera || ""; $("lighting").value = i.lighting || "";
+      if (i.model) $("model").value = i.model;
+      selectedPreset = i.preset; [...box.children].forEach(c => c.setAttribute("aria-pressed", c.textContent === i.preset));
+      $("gen").disabled = false; window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    h.appendChild(b);
+  });
+}
+renderHistory();
+
+$("gen").addEventListener("click", () => run(readInputs(), true));
+$("regen").addEventListener("click", () => { if (lastInputs) run(lastInputs, true); });
+$("copy").addEventListener("click", async () => {
+  const text = lastInputs ? enhance(lastInputs) : $("prompt").value;
+  try { await navigator.clipboard.writeText(text); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Copy prompt", 1500); }
+  catch(e) { $("prompt").select(); }
+});
+</script>
+</body>
+</html>
